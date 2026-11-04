@@ -1,0 +1,91 @@
+
+services:
+
+  # PostgreSQL Database
+  postgres:
+    container_name: ms_pg_sql
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: amdouni
+      POSTGRES_PASSWORD: amdouni
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # pgAdmin - PostgreSQL Administration
+  pgadmin:
+    container_name: ms_pgadmin
+    image: elestio/pgadmin:${SOFTWARE_VERSION_TAG}
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+      PGADMIN_LISTEN_PORT: "8080"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+    networks:
+      - microservices-net
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  # MongoDB Database
+  mongodb:
+    container_name: ms_mongo_db
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # Mongo Express - MongoDB Administration
+  mongo-express:
+    container_name: ms_mongo_express
+    image: mongo-express:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_ENABLED: "true"
+      ME_CONFIG_BASICAUTH_USERNAME: mongoexpressuser
+      ME_CONFIG_BASICAUTH_PASSWORD: mongoexpresspass
+    networks:
+      - microservices-net
+    depends_on:
+      - mongodb
+
+  # MailDev - Email Testing
+  maildev:
+    image: maildev/maildev:latest
+    container_name: maildev
+    restart: unless-stopped
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    networks:
+      - microservices-net
+
+
+# Docker Networks
+networks:
+  microservices-net:
+    driver: bridge
+
+# Docker Volumes
+volumes:
+  postgres:
+  mongo:
+

@@ -1,0 +1,72 @@
+services:
+
+   postgres:
+     container_name: ms_pg_sql
+     image: postgres
+     environment:
+       POSTGRES_USER: amdouni
+       POSTGRES_PASSWORD: amdouni
+       PGDATA: /var/lib/postgresql/data
+     volumes:
+       - postgres: /var/lib/postgresql/data
+     ports:
+       - 5432: 5432
+     networks: //assign this container to a network
+        - microservices-net
+     restart: unless-stopped //if this container stopped i want it to perform an automatic restart
+
+   pgadmin:
+     container_name: ms_pgadmin
+     image: elestio/pgadmin:${SOFTWARE_VERSION_TAG}
+     environment:
+       PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+       PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+        PGADMIN_LISTEN_PORT: 8080 //pgadmin listen on port 8080
+    ports:
+      - "172.17.0.1:8080:8080"
+    volumes:
+     - ./servers.json: /pgadmin4/servers.json
+    networks:
+      -microservices-net
+    restart: unless-stopped
+   mongodb:
+     container_name: ms_mongo_db
+     image: mongo
+     ports:
+       -27017:27017
+     volumes:
+       -mongo:/data
+     environment:
+       MONGO_INITDB_ROOT_USERNAME: root
+       MONGO_INITDB_ROOT_PASSWORD: example
+     restart: unless-stopped
+   mongo-express:
+     container_name: ms_mongo_express
+     image: mongo-express
+     restart: always
+     ports:
+       -8081: 8081
+     ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+       ME_CONFIG_BASICAUTH_ENABLED: true
+       ME_CONFIG_BASICAUTH_USERNAME: mongoexpressuser
+
+       ME_CONFIG_BASICAUTH_PASSWORD: mongoexpresspass
+   maildev:
+     image: maildev/maildev:latest
+     container_name: maildev
+     restart: always
+     ports:
+       - "1080:1080"
+       - "1025:1025"
+
+
+
+
+
+networks:
+  microservices-net:
+    driver: bridge
+volumes:
+  postgres:
+  pgadmin:
+  mongo:
