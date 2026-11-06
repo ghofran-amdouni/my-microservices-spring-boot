@@ -1,0 +1,14 @@
+server:
+  port: 8050
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/product
+    username: postgres
+    password: ghofghof
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    validate-migration-naming: true
