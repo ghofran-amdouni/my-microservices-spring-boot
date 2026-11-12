@@ -1,0 +1,63 @@
+
+name: E-commerce Microservices CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.service }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: config-server
+            directory: config-server/config-server
+
+          - service: customer
+            directory: customer
+
+          - service: discovery
+            directory: discovery
+
+          - service: gateway
+            directory: gateway (1)/gateway
+
+          - service: notification
+            directory: notification
+
+          - service: order
+            directory: order
+
+          - service: payment
+            directory: payment
+
+          - service: product
+            directory: product
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: ${{ matrix.directory }}/pom.xml
+
+      - name: Build and test with Maven
+        working-directory: ${{ matrix.directory }}
+        run: bash ./mvnw -B clean verify
